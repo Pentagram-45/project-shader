@@ -1,14 +1,18 @@
-
-Shader "Unlit/test shader"
+Shader "Unlit/underwater"
 {
     Properties
     {
-        _MainTex ("Texture", 2D) = "black" {}
+        _MainTex ("Texture", 2D) = "white" {}
+        _Color ("Water color", Color) = (0,0.5,1,1)
+        _Alpha ("Alpha", Range(0,1)) = 1
+        _Intensity ("Intensity", Range(0,1)) = 0.5
     }
     SubShader
     {
-        Tags { "RenderType"="Opaque" }
+        Tags { "Queue" = "Transparent" "RenderType"="Transparent" }
         LOD 100
+        
+        Blend SrcAlpha OneMinusSrcAlpha
 
         Pass
         {
@@ -34,7 +38,10 @@ Shader "Unlit/test shader"
             };
 
             sampler2D _MainTex;
+            float4 _Color;
+            float _Intensity;
             float4 _MainTex_ST;
+            float _Alpha;
 
             v2f vert (appdata v)
             {
@@ -49,6 +56,8 @@ Shader "Unlit/test shader"
             {
                 // sample the texture
                 fixed4 col = tex2D(_MainTex, i.uv);
+                col.rgb = lerp(col.rgb, _Color.rgb, _Intensity);
+                col.a = _Alpha;
                 // apply fog
                 UNITY_APPLY_FOG(i.fogCoord, col);
                 return col;
